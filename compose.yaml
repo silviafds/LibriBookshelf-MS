@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  # Banco de Dados PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-bookShelf
+    environment:
+      POSTGRES_DB: libri-bookShelf
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: 123
+    ports:
+      - "5435:5432"
+    volumes:
+      # Persistir dados do banco
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+volumes:
+  postgres-data:
