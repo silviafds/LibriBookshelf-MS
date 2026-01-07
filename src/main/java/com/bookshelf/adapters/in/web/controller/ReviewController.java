@@ -7,6 +7,10 @@ import com.bookshelf.application.mapper.ReviewMapper;
 import com.bookshelf.application.ports.in.service.ReviewService;
 import com.bookshelf.domain.vo.ReviewBookVo;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -28,12 +32,12 @@ public class ReviewController {
 
     @Operation(summary = "Register new review",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Review registered in the system"),
+                    @ApiResponse(responseCode = "201", description = "Review registered in the system"),
                     @ApiResponse(responseCode = "400", description = "Review registration failed"),
                     @ApiResponse(responseCode = "500", description = "Internal server error")
             })
     @PostMapping("/register-review")
-    public ReviewRegistrationResponse createBook(
+    public ReviewRegistrationResponse createReview(
             @Valid @RequestBody ReviewRequest request) {
 
         ReviewBookVo reviewBookVo = reviewMapper.toReviewBookVo(request);
@@ -43,12 +47,12 @@ public class ReviewController {
 
     @Operation(summary = "Delete review",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Delete review in the system"),
+                    @ApiResponse(responseCode = "204", description = "Delete deleted successfully"),
                     @ApiResponse(responseCode = "400", description = "Delete review failed"),
                     @ApiResponse(responseCode = "500", description = "Internal server error")
             })
-    @DeleteMapping("/delete-book/{id}")
-    public ReviewRegistrationResponse deleteBook(
+    @DeleteMapping("/delete-review/{id}")
+    public ReviewRegistrationResponse deleteReview(
             @PathVariable Long id) {
         return reviewService.deleteReview(id);
     }
@@ -59,18 +63,25 @@ public class ReviewController {
                     @ApiResponse(responseCode = "400", description = "List all review failed"),
                     @ApiResponse(responseCode = "500", description = "Internal server error")
             })
-    @GetMapping("/list-reviews")
-    public List<ReviewResponse> listAllBooks() {
+    @GetMapping("/list-all-reviews")
+    public List<ReviewResponse> listAllReviews() {
         return reviewService.listAllReviews();
     }
 
     @Operation(summary = "List reviews for id",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "List review in the system for id"),
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "LList review in the system for id",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    array  = @ArraySchema(schema = @Schema(implementation = ReviewResponse.class))
+                            )
+                    ),
                     @ApiResponse(responseCode = "400", description = "List review failed"),
                     @ApiResponse(responseCode = "500", description = "Internal server error")
             })
-    @GetMapping("/list-reviews/{id}")
+    @GetMapping("/list-only-review/{id}")
     public ReviewResponse listReviewForId(@PathVariable Long id) {
         return reviewService.listReviewForId(id);
     }
@@ -81,24 +92,47 @@ public class ReviewController {
                     @ApiResponse(responseCode = "400", description = "Edit review failed"),
                     @ApiResponse(responseCode = "500", description = "Internal server error")
             })
-    @PatchMapping("/edit-book")
-    public ReviewResponse partialUpdateReview(
+    @PatchMapping("/edit-review/{id}")
+    public ReviewResponse updateReview(@PathVariable Long id,
             @RequestBody ReviewRequest request) {
 
         ReviewBookVo bookVo = reviewMapper.toReviewBookVo(request);
 
-        return reviewService.partialUpdate(bookVo);
+        return reviewService.partialUpdate(id, bookVo);
     }
 
-    @Operation(summary = "Search review for title",
+    @Operation(summary = "Search reviews by book title",
+            description = "Returns a list of reviews for books matching the given title (partial match)",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Search review in the system for title"),
-                    @ApiResponse(responseCode = "400", description = "Search review failed"),
-                    @ApiResponse(responseCode = "500", description = "Internal server error")
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "List of reviews found",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    array  = @ArraySchema(schema = @Schema(implementation = ReviewResponse.class))
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "No reviews found for the given book title"
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Invalid request parameter"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "Internal server error"
+                    )
             })
-    @GetMapping("/search-review/{title}")
-    public ReviewResponse searchReviewByTitle(
-            @PathVariable String title) {
+    @GetMapping("/search")
+    public List<ReviewResponse> searchReviewsByBookTitle(
+            @Parameter(
+                    description = "DDD",
+                    required = true,
+                    example = "Clean Code"
+            )
+            @RequestParam String title) {
 
         return reviewService.searchReviewByTitle(title);
     }

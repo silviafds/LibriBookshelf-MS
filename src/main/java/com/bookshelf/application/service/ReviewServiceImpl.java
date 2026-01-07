@@ -100,28 +100,28 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public ReviewResponse partialUpdate(ReviewBookVo vo) {
+    public ReviewResponse partialUpdate(Long id, ReviewBookVo vo) {
 
-        if (!repository.existsById(vo.getId())) {
-            throw new ReviewNotFoundException(vo.getId());
+        if (!repository.existsById(id)) {
+            throw new ReviewNotFoundException(id);
         }
 
-        repository.updateReview(vo.getId(), vo.getReviewTitle(), vo.getBookName(), vo.getReview(), vo.getBookNote());
+        repository.updateReview(id, vo.getReviewTitle(), vo.getBookName(), vo.getReview(), vo.getBookNote());
 
-        Review updatedReview = repository.findById(vo.getId()).get();
+        Review updatedReview = repository.findById(id).get();
 
         return reviewMapper.reviewToReviewResponse(updatedReview);
     }
 
     @Override
-    public ReviewResponse searchReviewByTitle(String title) {
-        Review review = repository.searchReviewByTitle(title);
+    public List<ReviewResponse> searchReviewByTitle(String title) {
+        List<Review> review = repository.searchReviewByTitle(title);
 
         if (review == null) {
             throw new ReviewNotFoundException("Livro com título '" + title + "' não existe no catálogo");
         }
 
-        return reviewMapper.reviewToReviewResponse(review);
+        return reviewMapper.reviewListToReviewResponseList(review);
     }
 
     private boolean isValid(ReviewBookVo reviewBookVo) {

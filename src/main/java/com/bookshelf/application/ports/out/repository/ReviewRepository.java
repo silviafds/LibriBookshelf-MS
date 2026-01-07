@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
@@ -25,6 +27,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             @Param("book_note") Long bookNote);
 
     @Query(value = "SELECT * FROM books WHERE review_title = :review_title", nativeQuery = true)
-    Review searchReviewByTitle(@Param("review_title") String reviewTitle);
+    List<Review> searchReviewByTitle(@Param("review_title") String reviewTitle);
 
 }
