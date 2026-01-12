@@ -15,4 +15,5 @@ public class ReviewBookVo {
     private String bookName;
     private String review;
     private Long bookNote;
+    private Long idUserReviewed;
 }

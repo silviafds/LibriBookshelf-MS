@@ -52,3 +52,7 @@ eureka:
       instanceId: ${spring.application.name}:${server.port}
       hostname: localhost
       ip: 127.0.0.1
+
+services:
+  user-service:
+    url: http://localhost:8089  # URL do UserService

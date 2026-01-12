@@ -19,6 +19,7 @@ public class ReviewMapper {
                 .bookName(request.bookName())
                 .review(request.review())
                 .bookNote(request.bookNote())
+                .idUserReviewed(request.idUserReviewed())
                 .build();
     }
 
@@ -28,6 +29,7 @@ public class ReviewMapper {
                 .bookName(vo.getBookName())
                 .review(vo.getReview())
                 .bookNote(vo.getBookNote())
+                .idUserReviewed(vo.getIdUserReviewed())
                 .build();
     }
 
@@ -50,6 +52,19 @@ public class ReviewMapper {
         }
 
         return responses;
+    }
+
+    public ReviewResponse reviewToReviewResponse(Review review, String name) {
+        ReviewResponse response = ReviewResponse.builder()
+                .id(review.getId())
+                .reviewTitle(review.getReviewTitle())
+                .bookName(review.getBookName())
+                .bookNote(review.getBookNote())
+                .review(review.getReview())
+                .nameUserReviewed(name)
+                .build();
+
+        return response;
     }
 
     public ReviewResponse reviewToReviewResponse(Review review) {

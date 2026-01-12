@@ -4,7 +4,8 @@ public record ReviewRequest(
         String reviewTitle,
         String bookName,
         String review,
-        Long bookNote
+        Long bookNote,
+        Long idUserReviewed
 ) {
 
 }

@@ -2,7 +2,6 @@ package com.bookshelf.application.ports.in.service;
 
 import com.bookshelf.adapters.in.web.dto.response.ReviewRegistrationResponse;
 import com.bookshelf.adapters.in.web.dto.response.ReviewResponse;
-import com.bookshelf.domain.model.Review;
 import com.bookshelf.domain.vo.ReviewBookVo;
 import org.springframework.stereotype.Component;
 
@@ -13,8 +12,8 @@ public interface ReviewService {
 
     ReviewRegistrationResponse registerReview(ReviewBookVo reviewBookVo);
     ReviewRegistrationResponse deleteReview(Long id);
-    List<ReviewResponse> listAllReviews();
-    ReviewResponse listReviewForId(Long id);
+    List<ReviewResponse> listAllReviews(String tokenAuth);
+    ReviewResponse listReviewForId(Long id, String tokenAuth);
     ReviewResponse partialUpdate(Long id, ReviewBookVo vo);
     List<ReviewResponse> searchReviewByTitle(String title);
 

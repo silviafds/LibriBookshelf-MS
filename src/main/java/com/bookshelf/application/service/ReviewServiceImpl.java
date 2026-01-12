@@ -2,6 +2,7 @@ package com.bookshelf.application.service;
 
 import com.bookshelf.adapters.in.web.dto.response.ReviewRegistrationResponse;
 import com.bookshelf.adapters.in.web.dto.response.ReviewResponse;
+import com.bookshelf.adapters.out.client.UserServiceFeignClient;
 import com.bookshelf.application.mapper.ReviewMapper;
 import com.bookshelf.application.ports.in.service.ReviewService;
 import com.bookshelf.application.ports.out.repository.ReviewRepository;
@@ -15,7 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,11 +26,14 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewMapper reviewMapper;
 
+    private final UserServiceFeignClient userServiceFeignClient;
+
     @Autowired
     private ReviewRepository repository;
 
-    public ReviewServiceImpl(ReviewMapper reviewMapper) {
+    public ReviewServiceImpl(ReviewMapper reviewMapper, UserServiceFeignClient userServiceFeignClient) {
         this.reviewMapper = reviewMapper;
+        this.userServiceFeignClient = userServiceFeignClient;
     }
 
     @Override
@@ -83,20 +88,44 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewResponse> listAllReviews() {
-        List<Review> review = repository.findAll();
-        return reviewMapper.reviewListToReviewResponseList(review);
+    public List<ReviewResponse> listAllReviews(String tokenAuth) {
+        List<Review> reviews = repository.findAll();
+
+        Set<Long> distinctUserIds = reviews.stream()
+                .map(Review::getIdUserReviewed)
+                .collect(Collectors.toSet());
+
+        Map<Long, String> userNames = new HashMap<>();
+        for (Long userId : distinctUserIds) {
+            try {
+                userNames.put(userId, userServiceFeignClient.getUserById(userId, tokenAuth));
+            } catch (Exception e) {
+                userNames.put(userId, "Usuário não disponível");
+            }
+        }
+
+        List<ReviewResponse> responses = new ArrayList<>();
+        for (Review review : reviews) {
+            ReviewResponse response = reviewMapper.reviewToReviewResponse(review);
+            String userName = userNames.get(review.getIdUserReviewed());
+            response.setNameUserReviewed(userName);
+            responses.add(response);
+        }
+
+        return responses;
     }
 
     @Override
-    public ReviewResponse listReviewForId(Long id) {
+    public ReviewResponse listReviewForId(Long id, String tokenAuth) {
         if (!repository.existsById(id)) {
             throw new ReviewNotFoundException(id);
         }
 
         Review book = repository.findById(id).get();
 
-        return reviewMapper.reviewToReviewResponse(book);
+        String name = String.valueOf(userServiceFeignClient.getUserById(book.getIdUserReviewed(), tokenAuth));
+
+        return reviewMapper.reviewToReviewResponse(book, name);
     }
 
     @Override

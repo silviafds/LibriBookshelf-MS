@@ -24,9 +24,12 @@ public class Review {
     @Column(name = "book_name", nullable = false, length = 200)
     private String bookName;
 
-    @Column(name = "review", nullable = false, length = 200)
+    @Column(name = "review", nullable = false, length = 800)
     private String review;
 
     @Column(name = "book_note", nullable = false, length = 200)
     private Long bookNote;
+
+    @Column(name = "id_user_reviewed", nullable = false)
+    private Long idUserReviewed;
 }

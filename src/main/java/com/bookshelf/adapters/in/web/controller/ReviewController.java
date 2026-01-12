@@ -64,8 +64,8 @@ public class ReviewController {
                     @ApiResponse(responseCode = "500", description = "Internal server error")
             })
     @GetMapping("/list-all-reviews")
-    public List<ReviewResponse> listAllReviews() {
-        return reviewService.listAllReviews();
+    public List<ReviewResponse> listAllReviews(@RequestHeader(value = "Authorization", required = false) String tokenAuth) {
+        return reviewService.listAllReviews(tokenAuth);
     }
 
     @Operation(summary = "List reviews for id",
@@ -82,8 +82,8 @@ public class ReviewController {
                     @ApiResponse(responseCode = "500", description = "Internal server error")
             })
     @GetMapping("/list-only-review/{id}")
-    public ReviewResponse listReviewForId(@PathVariable Long id) {
-        return reviewService.listReviewForId(id);
+    public ReviewResponse listReviewForId(@PathVariable Long id, @RequestHeader(value = "Authorization", required = false) String tokenAuth) {
+        return reviewService.listReviewForId(id, tokenAuth);
     }
 
     @Operation(summary = "Edit review",
