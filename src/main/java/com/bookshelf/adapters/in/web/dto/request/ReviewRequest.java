@@ -2,7 +2,7 @@ package com.bookshelf.adapters.in.web.dto.request;
 
 public record ReviewRequest(
         String reviewTitle,
-        String bookName,
+        Long idBookReviewed,
         String review,
         Long bookNote,
         Long idUserReviewed

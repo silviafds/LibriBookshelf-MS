@@ -16,7 +16,7 @@ public class ReviewMapper {
     public ReviewBookVo toReviewBookVo(ReviewRequest request) {
         return ReviewBookVo.builder()
                 .reviewTitle(request.reviewTitle())
-                .bookName(request.bookName())
+                .idBookReviewed(request.idBookReviewed())
                 .review(request.review())
                 .bookNote(request.bookNote())
                 .idUserReviewed(request.idUserReviewed())
@@ -26,7 +26,7 @@ public class ReviewMapper {
     public Review toReview(ReviewBookVo vo) {
         return Review.builder()
                 .reviewTitle(vo.getReviewTitle())
-                .bookName(vo.getBookName())
+                .idBookReviewed(vo.getIdBookReviewed())
                 .review(vo.getReview())
                 .bookNote(vo.getBookNote())
                 .idUserReviewed(vo.getIdUserReviewed())
@@ -44,7 +44,7 @@ public class ReviewMapper {
             ReviewResponse response = ReviewResponse.builder()
                     .id(review.getId())
                     .reviewTitle(review.getReviewTitle())
-                    .bookName(review.getBookName())
+                    .idBookReviewed(review.getIdBookReviewed())
                     .bookNote(review.getBookNote())
                     .review(review.getReview())
                     .build();
@@ -58,7 +58,7 @@ public class ReviewMapper {
         ReviewResponse response = ReviewResponse.builder()
                 .id(review.getId())
                 .reviewTitle(review.getReviewTitle())
-                .bookName(review.getBookName())
+                .idBookReviewed(review.getIdBookReviewed())
                 .bookNote(review.getBookNote())
                 .review(review.getReview())
                 .nameUserReviewed(name)
@@ -71,7 +71,7 @@ public class ReviewMapper {
         ReviewResponse response = ReviewResponse.builder()
                 .id(review.getId())
                 .reviewTitle(review.getReviewTitle())
-                .bookName(review.getBookName())
+                .idBookReviewed(review.getIdBookReviewed())
                 .bookNote(review.getBookNote())
                 .review(review.getReview())
                 .build();

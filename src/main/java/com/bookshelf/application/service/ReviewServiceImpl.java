@@ -125,6 +125,8 @@ public class ReviewServiceImpl implements ReviewService {
 
         String name = String.valueOf(userServiceFeignClient.getUserById(book.getIdUserReviewed(), tokenAuth));
 
+        // chame o rabbittmq aqui nesta linha
+
         return reviewMapper.reviewToReviewResponse(book, name);
     }
 
@@ -135,7 +137,7 @@ public class ReviewServiceImpl implements ReviewService {
             throw new ReviewNotFoundException(id);
         }
 
-        repository.updateReview(id, vo.getReviewTitle(), vo.getBookName(), vo.getReview(), vo.getBookNote());
+        repository.updateReview(id, vo.getReviewTitle(), vo.getIdBookReviewed(), vo.getReview(), vo.getBookNote());
 
         Review updatedReview = repository.findById(id).get();
 
@@ -155,9 +157,8 @@ public class ReviewServiceImpl implements ReviewService {
 
     private boolean isValid(ReviewBookVo reviewBookVo) {
         return reviewBookVo.getReviewTitle() != null && !reviewBookVo.getReviewTitle().trim().isEmpty() &&
-                reviewBookVo.getBookName() != null && !reviewBookVo.getBookName().trim().isEmpty() &&
-                reviewBookVo.getReview() != null && !reviewBookVo.getReview().trim().isEmpty() &&
-                reviewBookVo.getBookNote() != null;
+                reviewBookVo.getIdBookReviewed() != null && reviewBookVo.getReview() != null &&
+                !reviewBookVo.getReview().trim().isEmpty() && reviewBookVo.getBookNote() != null;
     }
 
     private String validateReviewData(ReviewBookVo reviewBookVo) {

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class ReviewBookVo {
     private Long id;
     private String reviewTitle;
-    private String bookName;
+    private Long idBookReviewed;
     private String review;
     private Long bookNote;
     private Long idUserReviewed;

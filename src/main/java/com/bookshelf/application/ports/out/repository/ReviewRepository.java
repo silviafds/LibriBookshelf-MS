@@ -15,14 +15,14 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Modifying
     @Query("UPDATE Review r SET " +
             "r.reviewTitle  = :review_title, " +
-            "r.bookName  = :book_name, " +
+            "r.idBookReviewed  = :id_book_reviewed, " +
             "r.review = :review, " +
             "r.bookNote  = :book_note " +
             "WHERE r.id = :id")
     int updateReview(
             @Param("id") Long id,
             @Param("review_title") String reviewTitle,
-            @Param("book_name") String bookName,
+            @Param("id_book_reviewed") Long idBookReviewed,
             @Param("review") String review,
             @Param("book_note") Long bookNote);
 
