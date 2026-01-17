@@ -33,7 +33,7 @@ public class ReviewMapper {
                 .build();
     }
 
-    public List<ReviewResponse> reviewListToReviewResponseList(List<Review> reviews) {
+    public List<ReviewResponse> reviewListToReviewResponseList(List<Review> reviews, String name) {
         if (reviews == null) {
             return Collections.emptyList();
         }
@@ -44,7 +44,7 @@ public class ReviewMapper {
             ReviewResponse response = ReviewResponse.builder()
                     .id(review.getId())
                     .reviewTitle(review.getReviewTitle())
-                    .idBookReviewed(review.getIdBookReviewed())
+                    .nameBookReviewed(name)
                     .bookNote(review.getBookNote())
                     .review(review.getReview())
                     .build();
@@ -54,11 +54,12 @@ public class ReviewMapper {
         return responses;
     }
 
-    public ReviewResponse reviewToReviewResponse(Review review, String name) {
+
+    public ReviewResponse reviewToReviewResponse(Review review, String name, String nameBook) {
         ReviewResponse response = ReviewResponse.builder()
                 .id(review.getId())
                 .reviewTitle(review.getReviewTitle())
-                .idBookReviewed(review.getIdBookReviewed())
+                .nameBookReviewed(nameBook)
                 .bookNote(review.getBookNote())
                 .review(review.getReview())
                 .nameUserReviewed(name)
@@ -71,7 +72,6 @@ public class ReviewMapper {
         ReviewResponse response = ReviewResponse.builder()
                 .id(review.getId())
                 .reviewTitle(review.getReviewTitle())
-                .idBookReviewed(review.getIdBookReviewed())
                 .bookNote(review.getBookNote())
                 .review(review.getReview())
                 .build();

@@ -15,6 +15,5 @@ public interface ReviewService {
     List<ReviewResponse> listAllReviews(String tokenAuth);
     ReviewResponse listReviewForId(Long id, String tokenAuth);
     ReviewResponse partialUpdate(Long id, ReviewBookVo vo);
-    List<ReviewResponse> searchReviewByTitle(String title);
 
 }

@@ -28,6 +28,12 @@ spring:
       hibernate:
         format_sql: true
 
+  rabbitmq:
+    host: localhost            # ou seu host do RabbitMQ
+    port: 5672                 # porta padrão
+    username: bookshelf            # usuário padrão
+    password: senha123            # senha padrão
+
 server:
   port: 8081
   servlet:
@@ -56,3 +62,4 @@ eureka:
 services:
   user-service:
     url: http://localhost:8089  # URL do UserService
+

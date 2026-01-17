@@ -101,39 +101,5 @@ public class ReviewController {
         return reviewService.partialUpdate(id, bookVo);
     }
 
-    @Operation(summary = "Search reviews by book title",
-            description = "Returns a list of reviews for books matching the given title (partial match)",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "List of reviews found",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    array  = @ArraySchema(schema = @Schema(implementation = ReviewResponse.class))
-                            )
-                    ),
-                    @ApiResponse(
-                            responseCode = "404",
-                            description = "No reviews found for the given book title"
-                    ),
-                    @ApiResponse(
-                            responseCode = "400",
-                            description = "Invalid request parameter"
-                    ),
-                    @ApiResponse(
-                            responseCode = "500",
-                            description = "Internal server error"
-                    )
-            })
-    @GetMapping("/search")
-    public List<ReviewResponse> searchReviewsByBookTitle(
-            @Parameter(
-                    description = "DDD",
-                    required = true,
-                    example = "Clean Code"
-            )
-            @RequestParam String title) {
 
-        return reviewService.searchReviewByTitle(title);
-    }
 }

@@ -2,6 +2,7 @@ package com.bookshelf.application.service;
 
 import com.bookshelf.adapters.in.web.dto.response.ReviewRegistrationResponse;
 import com.bookshelf.adapters.in.web.dto.response.ReviewResponse;
+import com.bookshelf.adapters.out.client.CatalogClientService;
 import com.bookshelf.adapters.out.client.UserServiceFeignClient;
 import com.bookshelf.application.mapper.ReviewMapper;
 import com.bookshelf.application.ports.in.service.ReviewService;
@@ -27,6 +28,9 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewMapper reviewMapper;
 
     private final UserServiceFeignClient userServiceFeignClient;
+
+    @Autowired
+    private CatalogClientService catalogClient;
 
     @Autowired
     private ReviewRepository repository;
@@ -95,7 +99,13 @@ public class ReviewServiceImpl implements ReviewService {
                 .map(Review::getIdUserReviewed)
                 .collect(Collectors.toSet());
 
+        Set<Long> distinctBookNamesIds = reviews.stream()
+                .map(Review::getIdBookReviewed)
+                .collect(Collectors.toSet());
+
         Map<Long, String> userNames = new HashMap<>();
+        Map<Long, String> bookNames = new HashMap<>();
+
         for (Long userId : distinctUserIds) {
             try {
                 userNames.put(userId, userServiceFeignClient.getUserById(userId, tokenAuth));
@@ -104,11 +114,21 @@ public class ReviewServiceImpl implements ReviewService {
             }
         }
 
+        for (Long bookId : distinctBookNamesIds) {
+            try {
+                bookNames.put(bookId, catalogClient.buscarTituloLivroNoCatalog(bookId));
+            } catch (Exception e) {
+                bookNames.put(bookId, "Livro não disponível");
+            }
+        }
+
         List<ReviewResponse> responses = new ArrayList<>();
         for (Review review : reviews) {
             ReviewResponse response = reviewMapper.reviewToReviewResponse(review);
             String userName = userNames.get(review.getIdUserReviewed());
+            String nameBook = bookNames.get(review.getIdBookReviewed());
             response.setNameUserReviewed(userName);
+            response.setNameBookReviewed(nameBook);
             responses.add(response);
         }
 
@@ -125,9 +145,9 @@ public class ReviewServiceImpl implements ReviewService {
 
         String name = String.valueOf(userServiceFeignClient.getUserById(book.getIdUserReviewed(), tokenAuth));
 
-        // chame o rabbittmq aqui nesta linha
+        String nameBook = catalogClient.buscarTituloLivroNoCatalog(book.getIdBookReviewed());
 
-        return reviewMapper.reviewToReviewResponse(book, name);
+        return reviewMapper.reviewToReviewResponse(book, name, nameBook);
     }
 
     @Override
@@ -140,20 +160,9 @@ public class ReviewServiceImpl implements ReviewService {
         repository.updateReview(id, vo.getReviewTitle(), vo.getIdBookReviewed(), vo.getReview(), vo.getBookNote());
 
         Review updatedReview = repository.findById(id).get();
-
         return reviewMapper.reviewToReviewResponse(updatedReview);
     }
 
-    @Override
-    public List<ReviewResponse> searchReviewByTitle(String title) {
-        List<Review> review = repository.searchReviewByTitle(title);
-
-        if (review == null) {
-            throw new ReviewNotFoundException("Livro com título '" + title + "' não existe no catálogo");
-        }
-
-        return reviewMapper.reviewListToReviewResponseList(review);
-    }
 
     private boolean isValid(ReviewBookVo reviewBookVo) {
         return reviewBookVo.getReviewTitle() != null && !reviewBookVo.getReviewTitle().trim().isEmpty() &&

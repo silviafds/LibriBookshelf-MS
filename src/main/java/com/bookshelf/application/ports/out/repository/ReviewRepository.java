@@ -26,7 +26,4 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             @Param("review") String review,
             @Param("book_note") Long bookNote);
 
-    @Query(value = "SELECT * FROM books WHERE review_title = :review_title", nativeQuery = true)
-    List<Review> searchReviewByTitle(@Param("review_title") String reviewTitle);
-
 }
