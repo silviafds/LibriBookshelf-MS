@@ -7,7 +7,6 @@ import com.bookshelf.application.mapper.ReviewMapper;
 import com.bookshelf.application.ports.in.service.ReviewService;
 import com.bookshelf.domain.vo.ReviewBookVo;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -100,6 +99,5 @@ public class ReviewController {
 
         return reviewService.partialUpdate(id, bookVo);
     }
-
 
 }

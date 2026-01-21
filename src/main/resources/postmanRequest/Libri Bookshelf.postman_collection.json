@@ -1,0 +1,161 @@
+{
+  "info": {
+    "_postman_id": "f8cce41d-a5b1-4499-bfe4-efbb1cbb673e",
+    "name": "Libri Bookshelf",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "23899393"
+  },
+  "item": [
+    {
+      "name": "Register new review",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{tokenLibri}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"reviewTitle\": \"O Abismo da Ambiguidade: Um Clássico Assombrador e Insondável\",\r\n  \"idBookReviewed\": 110,\r\n  \"review\": \"Publicado em 1898, 'The Turn of the Screw' de Henry James é muito mais do que um simples conto de fantasmas. É um exercício literário magistral em ambiguidade e terror psicológico, uma obra que, como bem notaram críticos e leitores ao longo de mais de um século, se recusa terminantemente a oferecer uma única verdade[citation:3][citation:4].\",\r\n  \"bookNote\": 5,\r\n  \"idUserReviewed\": 1\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://{{host}}:{{port}}/review/register-review",
+          "protocol": "http",
+          "host": [
+            "{{host}}"
+          ],
+          "port": "{{port}}",
+          "path": [
+            "review",
+            "register-review"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Edit review",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{tokenLibri}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"id\": 2,\r\n    \"reviewTitle\": \"O Abismo da Ambiguidade - Um Clássico Assombrador e Insondável\",\r\n    \"idBookReviewed\": 110,\r\n    \"review\": \"Publicado em 1898, 'The Turn of the Screw' de Henry James é muito mais do que um simples conto de fantasmas. É um exercício literário magistral em ambiguidade e terror psicológico, uma obra que, como bem notaram críticos e leitores ao longo de mais de um século, se recusa terminantemente a oferecer uma única verdade[citation:3][citation:4].\",\r\n    \"bookNote\": 5,\r\n    \"idUserReviewed\": 1\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://{{host}}:{{port}}/review/edit-review/2",
+          "protocol": "http",
+          "host": [
+            "{{host}}"
+          ],
+          "port": "{{port}}",
+          "path": [
+            "review",
+            "edit-review",
+            "2"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete review",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{tokenLibri}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://{{host}}:{{port}}/review/delete-review/10",
+          "protocol": "http",
+          "host": [
+            "{{host}}"
+          ],
+          "port": "{{port}}",
+          "path": [
+            "review",
+            "delete-review",
+            "10"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List all reviews",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{tokenLibri}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://{{host}}:{{port}}/review/list-all-reviews",
+          "protocol": "http",
+          "host": [
+            "{{host}}"
+          ],
+          "port": "{{port}}",
+          "path": [
+            "review",
+            "list-all-reviews"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List only review per id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{tokenLibri}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://{{host}}:{{port}}/review/list-only-review/2",
+          "protocol": "http",
+          "host": [
+            "{{host}}"
+          ],
+          "port": "{{port}}",
+          "path": [
+            "review",
+            "list-only-review",
+            "2"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

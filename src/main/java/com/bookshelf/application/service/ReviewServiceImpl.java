@@ -20,6 +20,16 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Application service responsible for managing book reviews.
+ *
+ * This class implements the ReviewService interface and contains
+ * the business logic for creating, deleting, updating, and
+ * retrieving reviews.
+ *
+ * It also integrates with external services to enrich review data
+ * with user and book information.
+ */
 @Slf4j
 @Service
 @Transactional
@@ -40,6 +50,13 @@ public class ReviewServiceImpl implements ReviewService {
         this.userServiceFeignClient = userServiceFeignClient;
     }
 
+    /**
+     * Registers a new review after validating input data
+     * and business rules.
+     *
+     * @param reviewBookVo review data
+     * @return registration status response
+     */
     @Override
     public ReviewRegistrationResponse registerReview(ReviewBookVo reviewBookVo) {
         ReviewRegistrationResponse response = new ReviewRegistrationResponse();
@@ -76,6 +93,12 @@ public class ReviewServiceImpl implements ReviewService {
         return response;
     }
 
+    /**
+     * Deletes a review by its identifier.
+     *
+     * @param id review identifier
+     * @return deletion response
+     */
     @Override
     public ReviewRegistrationResponse deleteReview(Long id) {
         if (!repository.existsById(id)) {
@@ -91,6 +114,13 @@ public class ReviewServiceImpl implements ReviewService {
         return response;
     }
 
+    /**
+     * Retrieves all reviews and enriches them with user
+     * and book information from external services.
+     *
+     * @param tokenAuth authorization token
+     * @return list of reviews
+     */
     @Override
     public List<ReviewResponse> listAllReviews(String tokenAuth) {
         List<Review> reviews = repository.findAll();
@@ -135,6 +165,13 @@ public class ReviewServiceImpl implements ReviewService {
         return responses;
     }
 
+    /**
+     * Retrieves a single review by its identifier.
+     *
+     * @param id review identifier
+     * @param tokenAuth authorization token
+     * @return review details
+     */
     @Override
     public ReviewResponse listReviewForId(Long id, String tokenAuth) {
         if (!repository.existsById(id)) {
@@ -150,6 +187,13 @@ public class ReviewServiceImpl implements ReviewService {
         return reviewMapper.reviewToReviewResponse(book, name, nameBook);
     }
 
+    /**
+     * Partially updates an existing review.
+     *
+     * @param id review identifier
+     * @param vo updated review data
+     * @return updated review
+     */
     @Override
     public ReviewResponse partialUpdate(Long id, ReviewBookVo vo) {
 
