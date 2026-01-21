@@ -92,12 +92,13 @@ public class ReviewController {
                     @ApiResponse(responseCode = "500", description = "Internal server error")
             })
     @PatchMapping("/edit-review/{id}")
-    public ReviewResponse updateReview(@PathVariable Long id,
+    public ReviewResponse updateReview(@RequestHeader(value = "Authorization", required = false) String tokenAuth,
+                                       @PathVariable Long id,
             @RequestBody ReviewRequest request) {
 
         ReviewBookVo bookVo = reviewMapper.toReviewBookVo(request);
 
-        return reviewService.partialUpdate(id, bookVo);
+        return reviewService.partialUpdate(id, bookVo, tokenAuth);
     }
 
 }

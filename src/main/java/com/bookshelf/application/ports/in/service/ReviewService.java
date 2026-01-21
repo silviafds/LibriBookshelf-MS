@@ -14,6 +14,6 @@ public interface ReviewService {
     ReviewRegistrationResponse deleteReview(Long id);
     List<ReviewResponse> listAllReviews(String tokenAuth);
     ReviewResponse listReviewForId(Long id, String tokenAuth);
-    ReviewResponse partialUpdate(Long id, ReviewBookVo vo);
+    ReviewResponse partialUpdate(Long id, ReviewBookVo vo, String tokenAuth);
 
 }

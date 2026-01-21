@@ -195,7 +195,7 @@ public class ReviewServiceImpl implements ReviewService {
      * @return updated review
      */
     @Override
-    public ReviewResponse partialUpdate(Long id, ReviewBookVo vo) {
+    public ReviewResponse partialUpdate(Long id, ReviewBookVo vo, String tokenAuth) {
 
         if (!repository.existsById(id)) {
             throw new ReviewNotFoundException(id);
@@ -204,7 +204,11 @@ public class ReviewServiceImpl implements ReviewService {
         repository.updateReview(id, vo.getReviewTitle(), vo.getIdBookReviewed(), vo.getReview(), vo.getBookNote());
 
         Review updatedReview = repository.findById(id).get();
-        return reviewMapper.reviewToReviewResponse(updatedReview);
+
+        String name = String.valueOf(userServiceFeignClient.getUserById(updatedReview.getIdUserReviewed(), tokenAuth));
+        String nameBook = catalogClient.buscarTituloLivroNoCatalog(updatedReview.getIdBookReviewed());
+
+        return reviewMapper.reviewToReviewResponse(updatedReview, name, nameBook);
     }
 
 
