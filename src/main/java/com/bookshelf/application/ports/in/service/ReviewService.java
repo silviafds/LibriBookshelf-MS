@@ -5,6 +5,7 @@ import com.bookshelf.adapters.in.web.dto.response.ReviewResponse;
 import com.bookshelf.domain.vo.ReviewBookVo;
 import org.springframework.stereotype.Component;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @Component

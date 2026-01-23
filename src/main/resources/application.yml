@@ -38,6 +38,8 @@ server:
   port: 8081
   servlet:
     context-path: /
+  error:
+    include-stacktrace: never
 
 eureka:
   client:
@@ -63,3 +65,7 @@ services:
   user-service:
     url: http://localhost:8089  # URL do UserService
 
+api:
+  security:
+    token:
+      secret: my-very-strong-secret-key-of-32-characters

@@ -5,9 +5,11 @@ import com.bookshelf.adapters.in.web.dto.response.ReviewResponse;
 import com.bookshelf.adapters.out.client.CatalogClientService;
 import com.bookshelf.adapters.out.client.UserServiceFeignClient;
 import com.bookshelf.application.mapper.ReviewMapper;
+import com.bookshelf.application.ports.in.service.JwtService;
 import com.bookshelf.application.ports.in.service.ReviewService;
 import com.bookshelf.application.ports.out.repository.ReviewRepository;
 import com.bookshelf.domain.enums.RegistrationStatus;
+import com.bookshelf.domain.exceptions.ReviewAccessDeniedException;
 import com.bookshelf.domain.exceptions.ReviewNotFoundException;
 import com.bookshelf.domain.model.Review;
 import com.bookshelf.domain.vo.ReviewBookVo;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,15 +42,19 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final UserServiceFeignClient userServiceFeignClient;
 
+    private final JwtService jwtService;
+
     @Autowired
     private CatalogClientService catalogClient;
 
     @Autowired
     private ReviewRepository repository;
 
-    public ReviewServiceImpl(ReviewMapper reviewMapper, UserServiceFeignClient userServiceFeignClient) {
+    public ReviewServiceImpl(ReviewMapper reviewMapper, UserServiceFeignClient userServiceFeignClient,
+                             JwtService jwtService) {
         this.reviewMapper = reviewMapper;
         this.userServiceFeignClient = userServiceFeignClient;
+        this.jwtService = jwtService;
     }
 
     /**
@@ -197,8 +204,15 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public ReviewResponse partialUpdate(Long id, ReviewBookVo vo, String tokenAuth) {
 
-        if (!repository.existsById(id)) {
-            throw new ReviewNotFoundException(id);
+        Review review = repository.findById(id)
+                .orElseThrow(() -> new ReviewNotFoundException(id));
+
+
+        // 🔑 ID do usuário logado (do token)
+        Long userIdFromToken = jwtService.getUserIdFromToken(tokenAuth);
+
+        if (!review.getIdUserReviewed().equals(userIdFromToken)) {
+            throw new ReviewAccessDeniedException();
         }
 
         repository.updateReview(id, vo.getReviewTitle(), vo.getIdBookReviewed(), vo.getReview(), vo.getBookNote());
