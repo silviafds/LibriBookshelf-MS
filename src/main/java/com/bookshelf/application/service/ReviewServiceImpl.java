@@ -4,6 +4,7 @@ import com.bookshelf.adapters.in.web.dto.response.ReviewRegistrationResponse;
 import com.bookshelf.adapters.in.web.dto.response.ReviewResponse;
 import com.bookshelf.adapters.out.client.CatalogClientService;
 import com.bookshelf.adapters.out.client.UserServiceFeignClient;
+import com.bookshelf.adapters.out.producer.ReviewKafkaProducer;
 import com.bookshelf.application.mapper.ReviewMapper;
 import com.bookshelf.application.ports.in.service.JwtService;
 import com.bookshelf.application.ports.in.service.ReviewService;
@@ -44,6 +45,8 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final JwtService jwtService;
 
+    private final ReviewKafkaProducer kafkaProducer;
+
     @Autowired
     private CatalogClientService catalogClient;
 
@@ -51,10 +54,11 @@ public class ReviewServiceImpl implements ReviewService {
     private ReviewRepository repository;
 
     public ReviewServiceImpl(ReviewMapper reviewMapper, UserServiceFeignClient userServiceFeignClient,
-                             JwtService jwtService) {
+                             JwtService jwtService, ReviewKafkaProducer kafkaProducer) {
         this.reviewMapper = reviewMapper;
         this.userServiceFeignClient = userServiceFeignClient;
         this.jwtService = jwtService;
+        this.kafkaProducer = kafkaProducer;
     }
 
     /**
@@ -84,6 +88,10 @@ public class ReviewServiceImpl implements ReviewService {
 
             Review review = reviewMapper.toReview(reviewBookVo);
             repository.save(review);
+
+            kafkaProducer.sendReviewCreatedMessage(
+                    "Review: '" + review.getReviewTitle() + "' cadastrada com sucesso"
+            );
 
             response.setStatus(200);
             response.setMessage(String.valueOf(RegistrationStatus.SUCCESS.getDefaultMessage()));
