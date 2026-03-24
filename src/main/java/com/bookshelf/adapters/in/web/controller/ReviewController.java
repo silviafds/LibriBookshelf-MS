@@ -12,9 +12,9 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RestController
@@ -37,7 +37,7 @@ public class ReviewController {
                     @ApiResponse(responseCode = "500", description = "Internal server error")
             })
     @PostMapping("/register-review")
-    public ReviewRegistrationResponse createReview(
+    public ResponseEntity<ReviewRegistrationResponse> createReview(
             @Valid @RequestBody ReviewRequest request) {
 
         ReviewBookVo reviewBookVo = reviewMapper.toReviewBookVo(request);
@@ -52,7 +52,7 @@ public class ReviewController {
                     @ApiResponse(responseCode = "500", description = "Internal server error")
             })
     @DeleteMapping("/delete-review/{id}")
-    public ReviewRegistrationResponse deleteReview(
+    public ResponseEntity<ReviewRegistrationResponse> deleteReview(
             @PathVariable Long id) {
         return reviewService.deleteReview(id);
     }
@@ -82,7 +82,7 @@ public class ReviewController {
                     @ApiResponse(responseCode = "500", description = "Internal server error")
             })
     @GetMapping("/list-only-review/{id}")
-    public ReviewResponse listReviewForId(@PathVariable Long id, @RequestHeader(value = "Authorization", required = false) String tokenAuth) {
+    public ResponseEntity<ReviewResponse> listReviewForId(@PathVariable Long id, @RequestHeader(value = "Authorization", required = false) String tokenAuth) {
         return reviewService.listReviewForId(id, tokenAuth);
     }
 

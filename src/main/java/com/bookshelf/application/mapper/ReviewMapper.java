@@ -18,7 +18,7 @@ public class ReviewMapper {
                 .reviewTitle(request.reviewTitle())
                 .idBookReviewed(request.idBookReviewed())
                 .review(request.review())
-                .bookNote(request.bookNote())
+                .bookNote(Math.toIntExact(request.bookNote()))
                 .idUserReviewed(request.idUserReviewed())
                 .build();
     }
@@ -28,7 +28,7 @@ public class ReviewMapper {
                 .reviewTitle(vo.getReviewTitle())
                 .idBookReviewed(vo.getIdBookReviewed())
                 .review(vo.getReview())
-                .bookNote(vo.getBookNote())
+                .bookNote(Long.valueOf(vo.getBookNote()))
                 .idUserReviewed(vo.getIdUserReviewed())
                 .build();
     }

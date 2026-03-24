@@ -17,10 +17,9 @@ import com.bookshelf.domain.vo.ReviewBookVo;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.AccessDeniedException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -69,43 +68,28 @@ public class ReviewServiceImpl implements ReviewService {
      * @return registration status response
      */
     @Override
-    public ReviewRegistrationResponse registerReview(ReviewBookVo reviewBookVo) {
-        ReviewRegistrationResponse response = new ReviewRegistrationResponse();
+    public ResponseEntity<ReviewRegistrationResponse> registerReview(ReviewBookVo reviewBookVo) {
 
-        try {
-            if (!isValid(reviewBookVo)) {
-                response.setStatus(400);
-                response.setMessage(String.valueOf(RegistrationStatus.MISSING_DATA.getDefaultMessage()));
-                return response;
-            }
-
-            String validationError = validateReviewData(reviewBookVo);
-            if (validationError != null) {
-                response.setStatus(400);
-                response.setMessage(String.valueOf(RegistrationStatus.VALIDATION_ERROR.getDefaultMessage()));
-                return response;
-            }
-
-            Review review = reviewMapper.toReview(reviewBookVo);
-            repository.save(review);
-
-            kafkaProducer.sendReviewCreatedMessage(
-                    "Review: '" + review.getReviewTitle() + "' cadastrada com sucesso"
-            );
-
-            response.setStatus(200);
-            response.setMessage(String.valueOf(RegistrationStatus.SUCCESS.getDefaultMessage()));
-
-        } catch (DataIntegrityViolationException e) {
-            response.setStatus(400);
-            response.setMessage(String.valueOf(RegistrationStatus.DATABASE_ERROR.getDefaultMessage()));
-
-        } catch (Exception e) {
-            response.setStatus(500);
-            response.setMessage(String.valueOf(RegistrationStatus.UNKNOWN_ERROR.getDefaultMessage()));
+        if (!isValid(reviewBookVo)) {
+            throw new IllegalArgumentException(RegistrationStatus.MISSING_DATA.getDefaultMessage());
         }
 
-        return response;
+        String validationError = validateReviewData(reviewBookVo);
+        if (validationError != null) {
+            throw new IllegalArgumentException(RegistrationStatus.VALIDATION_ERROR.getDefaultMessage());
+        }
+
+        Review review = reviewMapper.toReview(reviewBookVo);
+        repository.save(review);
+
+        kafkaProducer.sendReviewCreatedMessage(
+                "Review: '" + review.getReviewTitle() + "' cadastrada com sucesso"
+        );
+
+        ReviewRegistrationResponse response = new ReviewRegistrationResponse();
+        response.setMessage(RegistrationStatus.SUCCESS.getDefaultMessage());
+
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -115,18 +99,21 @@ public class ReviewServiceImpl implements ReviewService {
      * @return deletion response
      */
     @Override
-    public ReviewRegistrationResponse deleteReview(Long id) {
-        if (!repository.existsById(id)) {
-            throw new ReviewNotFoundException(id);
-        }
+    public ResponseEntity<ReviewRegistrationResponse> deleteReview(Long id) {
 
-        Review review = repository.findById(id).get();
+        Review review = repository.findById(id)
+                .orElseThrow(() -> new ReviewNotFoundException(id));
+
         repository.delete(review);
 
+        kafkaProducer.sendReviewDeleteMessage(
+                "Review de id: " + id + " deletada com sucesso."
+        );
+
         ReviewRegistrationResponse response = new ReviewRegistrationResponse();
-        response.setStatus(200);
-        response.setMessage("Review removido do banco de dados.");
-        return response;
+        response.setMessage("Review removida com sucesso.");
+
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -177,6 +164,10 @@ public class ReviewServiceImpl implements ReviewService {
             responses.add(response);
         }
 
+        if(responses != null) {
+            kafkaProducer.sendReviewTopicAllMessage("Reviews retornadas: '" + responses);
+        }
+
         return responses;
     }
 
@@ -188,18 +179,22 @@ public class ReviewServiceImpl implements ReviewService {
      * @return review details
      */
     @Override
-    public ReviewResponse listReviewForId(Long id, String tokenAuth) {
-        if (!repository.existsById(id)) {
-            throw new ReviewNotFoundException(id);
-        }
+    public ResponseEntity<ReviewResponse> listReviewForId(Long id, String tokenAuth) {
 
-        Review book = repository.findById(id).get();
+        Review review = repository.findById(id)
+                .orElseThrow(() -> new ReviewNotFoundException(id));
 
-        String name = String.valueOf(userServiceFeignClient.getUserById(book.getIdUserReviewed(), tokenAuth));
+        String userName = getUserNameSafely(review.getIdUserReviewed(), tokenAuth);
+        String bookName = getBookNameSafely(review.getIdBookReviewed());
 
-        String nameBook = catalogClient.buscarTituloLivroNoCatalog(book.getIdBookReviewed());
+        ReviewResponse response = reviewMapper
+                .reviewToReviewResponse(review, userName, bookName);
 
-        return reviewMapper.reviewToReviewResponse(book, name, nameBook);
+        kafkaProducer.sendReviewTopicForIdMessage(
+                "Review: '" + response.getReviewTitle() + "' listada com sucesso"
+        );
+
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -215,29 +210,42 @@ public class ReviewServiceImpl implements ReviewService {
         Review review = repository.findById(id)
                 .orElseThrow(() -> new ReviewNotFoundException(id));
 
-
-        // 🔑 ID do usuário logado (do token)
         Long userIdFromToken = jwtService.getUserIdFromToken(tokenAuth);
 
         if (!review.getIdUserReviewed().equals(userIdFromToken)) {
             throw new ReviewAccessDeniedException();
         }
 
-        repository.updateReview(id, vo.getReviewTitle(), vo.getIdBookReviewed(), vo.getReview(), vo.getBookNote());
+        repository.updateReview(
+                id,
+                vo.getReviewTitle(),
+                vo.getIdBookReviewed(),
+                vo.getReview(),
+                Long.valueOf(vo.getBookNote())
+        );
 
-        Review updatedReview = repository.findById(id).get();
+        Review updatedReview = repository.findById(id)
+                .orElseThrow(() -> new ReviewNotFoundException(id));
 
-        String name = String.valueOf(userServiceFeignClient.getUserById(updatedReview.getIdUserReviewed(), tokenAuth));
-        String nameBook = catalogClient.buscarTituloLivroNoCatalog(updatedReview.getIdBookReviewed());
+        String userName = getUserNameSafely(updatedReview.getIdUserReviewed(), tokenAuth);
+        String bookName = getBookNameSafely(updatedReview.getIdBookReviewed());
 
-        return reviewMapper.reviewToReviewResponse(updatedReview, name, nameBook);
+        kafkaProducer.sendReviewEditMessage(
+                "Review: '" + updatedReview.getReviewTitle() + "' editada com sucesso"
+        );
+
+        return reviewMapper.reviewToReviewResponse(updatedReview, userName, bookName);
     }
 
+    private boolean isValid(ReviewBookVo vo) {
+        return isNotBlank(vo.getReviewTitle())
+                && vo.getIdBookReviewed() != null
+                && isNotBlank(vo.getReview())
+                && vo.getBookNote() != null;
+    }
 
-    private boolean isValid(ReviewBookVo reviewBookVo) {
-        return reviewBookVo.getReviewTitle() != null && !reviewBookVo.getReviewTitle().trim().isEmpty() &&
-                reviewBookVo.getIdBookReviewed() != null && reviewBookVo.getReview() != null &&
-                !reviewBookVo.getReview().trim().isEmpty() && reviewBookVo.getBookNote() != null;
+    private boolean isNotBlank(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 
     private String validateReviewData(ReviewBookVo reviewBookVo) {
@@ -250,5 +258,21 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         return null;
+    }
+
+    private String getUserNameSafely(Long userId, String tokenAuth) {
+        try {
+            return userServiceFeignClient.getUserById(userId, tokenAuth);
+        } catch (Exception e) {
+            return "Usuário não disponível";
+        }
+    }
+
+    private String getBookNameSafely(Long bookId) {
+        try {
+            return catalogClient.buscarTituloLivroNoCatalog(bookId);
+        } catch (Exception e) {
+            return "Livro não disponível";
+        }
     }
 }
